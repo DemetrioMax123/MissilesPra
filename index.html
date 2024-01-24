@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>TEST</title>
+    <style>
+      #game {
+        background-color: aqua;
+      }
+    </style>
+  </head>
+  <body>
+    <canvas id="game" width="400" height="400"></canvas>
+    <script>
+      const canvas = document.getElementById("game");
+      const ctx = canvas.getContext("2d");
+
+      var bullets = [];
+      var mousePressed = false;
+      var mouseLocationClick = { x: 0, y: 0 };
+
+      const square = {
+        x: 200,
+        y: 360,
+        width: 40,
+        height: 40,
+      };
+      const missile = {
+        x: square.x + 15,
+        y: square.y + 2,
+        width: 5,
+        height: 5,
+
+        dx: 0,
+        dy: 0,
+        speed: 15,
+      };
+
+      addEventListener("mousedown", function (e) {
+        mousePressed = true;
+        if (mousePressed === true) {
+          mouseLocationClick = mouseLocation(canvas, e);
+          let dx = mouseLocationClick.x - missile.x;
+          let dy = mouseLocationClick.y - missile.y;
+          let distance = Math.sqrt(dx * dx + dy * dy);
+          missile.dx = dx / distance;
+          missile.dy = dy / distance;
+        }
+      });
+
+      addEventListener("mouseup", function (e) {
+        mousePressed = false;
+      });
+
+      function mouseLocation(canvas, e) {
+        var rect = canvas.getBoundingClientRect();
+        return {
+          x: e.clientX - rect.left,
+          y: e.clientY - rect.top,
+        };
+      }
+
+      function loop() {
+        requestAnimationFrame(loop);
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        if (mousePressed) {
+          let prevX = missile.x;
+          let prevY = missile.y;
+          missile.x += missile.dx;
+          missile.y += missile.dy;
+
+          let numMissiles = Math.floor(
+            Math.sqrt(
+              Math.pow(missile.x - prevX, 2) + Math.pow(missile.y - prevY, 2)
+            )
+          );
+          let missileGab = 15;
+          for (let i = 0; i < numMissiles; i += missileGab) {
+            bullets.push({
+              x: prevX + (i * missile.dx) / numMissiles,
+              y: prevY + (i * missile.dy) / numMissiles,
+            });
+          }
+        } else {
+          missile.x = square.x + 25;
+          missile.y = square.y + 2;
+          bullets = [];
+        }
+
+        //draw square
+        ctx.fillStyle = "red";
+        ctx.fillRect(square.x, square.y, square.width, square.height);
+
+        //draw missile
+        ctx.fillStyle = "black";
+        bullets.forEach(function (bullet, index) {
+          ctx.beginPath();
+          ctx.arc(bullet.x, bullet.y, missile.width, 0, Math.PI * 2, true);
+          ctx.fill();
+        });
+      }
+      loop();
+    </script>
+  </body>
+</html>
